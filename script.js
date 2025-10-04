@@ -248,7 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (win) {
           win.document.write(`
             <iframe
-              src="https://fair.playcode.io/"
+              src="https://faircloud.netlify.app"
               style="border:none;width:100vw;height:100vh;">
             </iframe>
           `);
