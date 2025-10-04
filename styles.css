@@ -1,9 +1,11 @@
+/* styles.css */
+
+/* base layout */
 body {
   margin: 0;
   font-family: sans-serif;
   color: var(--text);
   background: var(--bg);
-
   display: grid;
   grid-template-rows: auto auto 1fr;
   height: 100vh;
@@ -17,18 +19,7 @@ body {
   gap: 0.5rem;
 }
 
-#locationBar {
-  padding: 0.25rem 1rem;
-  font-size: 0.9rem;
-  background: var(--loc-bg);
-  color: var(--loc-text);
-}
-
-#mainContent {
-  padding: 1rem;
-  overflow-y: auto;
-}
-
+/* tabs */
 .tab {
   padding: 0.5rem 1rem;
   cursor: pointer;
@@ -36,9 +27,28 @@ body {
   background: var(--tab-inactive);
   transition: background 0.2s, transform 0.2s;
 }
-.tab:hover { transform: scale(1.05); }
-.tab.active { background: var(--tab-active); }
+.tab:hover {
+  transform: scale(1.05);
+}
+.tab.active {
+  background: var(--tab-active);
+}
 
+/* fake URL display */
+#locationBar {
+  padding: 0.25rem 1rem;
+  font-size: 0.9rem;
+  background: var(--loc-bg);
+  color: var(--loc-text);
+}
+
+/* main content area */
+#mainContent {
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+/* button groups */
 .button-group {
   display: flex;
   gap: 1rem;
@@ -57,6 +67,7 @@ body {
   transform: scale(1.05);
 }
 
+/* search input */
 #searchInput {
   padding: 0.5rem;
   width: 100%;
@@ -67,6 +78,7 @@ body {
   color: var(--text);
 }
 
+/* games grid (default) */
 #gameContainer {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -94,6 +106,49 @@ body {
   margin-bottom: 0.5rem;
 }
 
+/* movies grid: smaller cards, 6 columns */
+#movieContainer {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.6rem;
+  align-items: start;
+}
+#movieContainer .game-card {
+  padding: 0.4rem;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  align-items: center;
+  text-align: center;
+}
+#movieContainer .game-card img {
+  width: 100%;
+  height: 110px;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-bottom: 0.4rem;
+}
+#movieContainer .game-card h2 {
+  font-size: 0.85rem;
+  margin: 0;
+  line-height: 1.1;
+  max-height: 2.2em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+}
+
+/* responsive fallback: reduce columns on small screens */
+@media (max-width: 1200px) {
+  #movieContainer { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 800px) {
+  #movieContainer { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 420px) {
+  #movieContainer { grid-template-columns: 1fr; }
+}
+
+/* modal window */
 .modal {
   display: none;
   position: fixed;
@@ -112,7 +167,7 @@ body {
   overflow: auto;
   animation: slideDown 0.3s ease-out;
 }
-#gameFrame {
+#gameFrame, #movieFrame {
   width: 100%;
   height: 60vh;
   border: none;
@@ -135,11 +190,13 @@ body {
   background: var(--btn-hover);
 }
 
+/* slide-down modal animation */
 @keyframes slideDown {
   from { opacity: 0; transform: translateY(-10px); }
-  to   { opacity: 1; transform: translateY(0); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
+/* homepage tweaks */
 #mainContent.home {
   display: flex;
   flex-direction: column;
@@ -157,27 +214,40 @@ body {
   min-width: 140px;
 }
 
+/* theme variables */
 .white-theme {
-  --bg: #ffffff;      --text: #000000;
-  --tab-bg: #f0f0f0;  --tab-active: #dddddd;
+  --bg: #ffffff;
+  --text: #000000;
+  --tab-bg: #f0f0f0;
+  --tab-active: #dddddd;
   --tab-inactive: #cccccc;
-  --loc-bg: #e8e8e8;  --loc-text: #444444;
-  --btn-bg: #e0e0e0;  --btn-hover: #d0d0d0;
+  --loc-bg: #e8e8e8;
+  --loc-text: #444444;
+  --btn-bg: #e0e0e0;
+  --btn-hover: #d0d0d0;
   --card-bg: #fafafa;
 }
 .ocean-theme {
-  --bg: #e0f7fa;      --text: #006064;
-  --tab-bg: #00acc1;  --tab-active: #00838f;
+  --bg: #e0f7fa;
+  --text: #006064;
+  --tab-bg: #00acc1;
+  --tab-active: #00838f;
   --tab-inactive: #4dd0e1;
-  --loc-bg: #b2ebf2;  --loc-text: #004d40;
-  --btn-bg: #26c6da;  --btn-hover: #00acc1;
+  --loc-bg: #b2ebf2;
+  --loc-text: #004d40;
+  --btn-bg: #26c6da;
+  --btn-hover: #00acc1;
   --card-bg: #e0f2f1;
 }
 .dark-theme {
-  --bg: #121212;      --text: #e0e0e0;
-  --tab-bg: #1e1e1e;  --tab-active: #333333;
+  --bg: #121212;
+  --text: #e0e0e0;
+  --tab-bg: #1e1e1e;
+  --tab-active: #333333;
   --tab-inactive: #2a2a2a;
-  --loc-bg: #1a1a1a;  --loc-text: #cccccc;
-  --btn-bg: #2a2a2a;  --btn-hover: #3a3a3a;
+  --loc-bg: #1a1a1a;
+  --loc-text: #cccccc;
+  --btn-bg: #2a2a2a;
+  --btn-hover: #3a3a3a;
   --card-bg: #1f1f1f;
 }
