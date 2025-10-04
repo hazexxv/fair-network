@@ -99,7 +99,6 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="controls">
             <button id="downloadBtn">Download</button>
             <button id="fullscreenBtn">Fullscreen</button>
-            <button id="aboutBlankBtn">Open in about:blank</button>
             <button id="blobBtn">Open in Blob URL</button>
           </div>
         </div>
@@ -113,7 +112,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeModal     = document.getElementById('closeGameModal');
     const downloadBtn    = document.getElementById('downloadBtn');
     const fullscreenBtn  = document.getElementById('fullscreenBtn');
-    const aboutBlankBtn  = document.getElementById('aboutBlankBtn');
     const blobBtn        = document.getElementById('blobBtn');
 
     closeModal.addEventListener('click', () => {
@@ -194,19 +192,6 @@ document.addEventListener('DOMContentLoaded', () => {
       fullscreenBtn.onclick = () => {
         if (gameFrame.requestFullscreen) gameFrame.requestFullscreen();
         else alert('Fullscreen not supported');
-      };
-
-      aboutBlankBtn.onclick = () => {
-        const win = window.open('about:blank', '_blank');
-        if (win) {
-          win.document.write(`
-            <iframe
-              src="https://fair.playcode.io/"
-              style="border:none;width:100vw;height:100vh;">
-            </iframe>
-          `);
-          win.document.close();
-        }
       };
 
       blobBtn.onclick = () => {
