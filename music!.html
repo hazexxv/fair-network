@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en"> 
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fair Music</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --accent-1: #7209b7;
+      --accent-2: #560bad;
+      --bg-default: #2b2b2b;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Orbitron', sans-serif;
+      background: var(--bg-default); 
+      color: #eee;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      transition: background 1s ease;
+    }
+
+    h1 {
+      color: #fff;
+      margin-bottom: 20px;
+      text-shadow: 0 0 10px #9d4edd;
+    }
+
+    #searchSection {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      width: 280px;
+      flex: 1 1 auto;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      background: var(--accent-1);
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.3s;
+      font-weight: bold;
+      flex: 0 0 auto;
+    }
+
+    button:hover { background: var(--accent-2); }
+
+    #mediaSection {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      max-width: 720px;
+      width: 100%;
+    }
+
+    #thumbnail {
+      width: 250px;
+      height: 250px;
+      object-fit: cover;
+      border-radius: 16px;
+      margin-bottom: 20px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
+    }
+
+    #controlCenter { width: 100%; }
+    #videoTitle { font-size: 1.2em; margin-bottom: 10px; text-align: center; line-height: 1.3; }
+
+    #controlButtons {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    #timeline { display: flex; align-items: center; gap: 10px; width: 100%; flex-wrap: wrap; }
+    #progressBar { flex-grow: 1; height: 8px; border-radius: 4px; background: #ccc; cursor: pointer; }
+
+    #player { display: none; margin-top: 20px; }
+
+    #searchResultsPopup {
+      position: absolute;
+      top: 70px;
+      background: rgba(0, 0, 0, 0.95);
+      border-radius: 10px;
+      overflow-y: auto;
+      max-height: 250px;
+      width: 320px;
+      display: none;
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.7);
+    }
+
+    .searchResultItem { padding: 10px; border-bottom: 1px solid #333; cursor: pointer; color: #eee; }
+    .searchResultItem:hover { background: rgba(255,255,255,0.05); }
+
+    #playlistEditorPopup {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7);
+      display: none; align-items: center; justify-content: center;
+    }
+
+    #playlistEditorContent {
+      background: #1b1b1b; padding: 30px; border-radius: 12px; max-width: 500px; width: 90%;
+      box-shadow: 0 0 15px rgba(0,0,0,0.8);
+    }
+
+    #playlistEditorList { list-style: none; padding: 0; max-height: 300px; overflow-y: auto; margin-bottom: 20px; }
+    #playlistEditorList li { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #333; color: #eee; cursor: pointer; }
+    #playlistEditorList li:hover { background: rgba(255,255,255,0.05); }
+
+    #playlistEditorList button {
+      background: #9000ff55;
+      border: none;
+      border-radius: 5px;
+      color: #eee;
+      cursor: pointer;
+      padding: 4px 8px;
+      font-weight: bold;
+    }
+
+    @media (max-width: 600px) {
+      #thumbnail { width: 180px; height: 180px; }
+      #searchSection { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Fair Music</h1>
+  <h6>(If the video doesnt play, "show video" then play from the embed)</h6>
+  <div id="searchSection">
+    <input type="text" id="itunesSearch" placeholder="Enter song or artist" oninput="searchiTunes()" autocomplete="off" />
+    <button onclick="openPlaylistEditor()">Playlist</button>
+    <button id="showHideButton" onclick="toggleVideo()">Show Video</button>
+  </div>
+
+  <div id="searchResultsPopup"><div id="searchResults"></div></div>
+
+  <div id="mediaSection">
+    <img id="thumbnail" src="https://www.nomadfoods.com/wp-content/uploads/2018/08/placeholder-1-e1533569576673-960x960.png" alt="Album Art" crossorigin="anonymous" />
+    <div id="controlCenter">
+      <div id="videoTitle"></div>
+      <div id="controlButtons">
+        <button onclick="previousVideo()">Previous</button>
+        <button id="playPauseButton" onclick="togglePlayPause()">Play</button>
+        <button onclick="nextVideo()">Next</button>
+      </div>
+      <div id="timeline">
+        <span id="currentTime">0:00</span>
+        <input type="range" id="progressBar" value="0" min="0" step="1" />
+        <span id="totalDuration">0:00</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="player"></div>
+
+  <div id="playlistEditorPopup">
+    <div id="playlistEditorContent">
+      <h2>Playlist Editor</h2>
+      <ul id="playlistEditorList"></ul>
+      <button onclick="shuffleVideos()">Shuffle</button>
+      <button onclick="closePlaylistEditor()">Close</button>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.2/color-thief.umd.js"></script>
+
+  <script>
+    const encodedApiKey = 'QUl6YVN5Qlc4NnY4d3BucEVGV1JXWHF6Mk0tOVU5cFpLbE12R1Fr';
+
+    const apiKey = atob(encodedApiKey);
+
+    let player;
+    let currentVideoIndex = 0;
+    let playlist = [];
+    let isPlaying = false;
+    let playerReady = false;
+    let videoVisible = false;
+
+    const colorThief = new ColorThief();
+    const thumbEl = document.getElementById('thumbnail');
+    const videoTitleEl = document.getElementById('videoTitle');
+
+    const savedPlaylist = localStorage.getItem('videoPlaylist');
+    if (savedPlaylist) {
+      try {
+        playlist = JSON.parse(savedPlaylist) || [];
+      } catch {
+        playlist = [];
+      }
+    }
+
+    function formatTime(s) {
+      const m = Math.floor(s / 60);
+      const sec = Math.floor(s % 60);
+      return `${m}:${sec < 10 ? '0' : ''}${sec}`;
+    }
+
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player('player', {
+        height: '360',
+        width: '640',
+        playerVars: { autoplay: 0, controls: 1, origin: location.origin },
+        events: {
+          onReady: onPlayerReady,
+          onStateChange: onPlayerStateChange,
+          onError: onPlayerError
+        }
+      });
+    }
+
+    function onPlayerReady() {
+      playerReady = true;
+      if (playlist.length) loadVideoByIndex(currentVideoIndex);
+    }
+
+    function onPlayerStateChange(e) {
+      if (e.data === YT.PlayerState.ENDED) nextVideo();
+      else if (e.data === YT.PlayerState.PLAYING) {
+        isPlaying = true;
+      } else if (e.data === YT.PlayerState.PAUSED) {
+        isPlaying = false;
+      }
+      updatePlayPauseButton();
+    }
+
+    function onPlayerError(e) {
+      alert({
+        2: 'Invalid video ID',
+        5: 'Playback error',
+        100: 'Video not found',
+        101: 'Embedding blocked',
+        150: 'Embedding blocked'
+      }[e.data] || 'Error occurred during video playback');
+    }
+
+    function loadVideoByIndex(index) {
+      if (!playerReady) return;
+      if (!playlist[index]) return;
+      const { videoId, artworkUrl } = playlist[index];
+
+      thumbEl.src = artworkUrl || 'https://www.nomadfoods.com/wp-content/uploads/2018/08/placeholder-1-e1533569576673-960x960.png';
+      thumbEl.onload = () => applyGradientFromImage(thumbEl);
+
+      fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${apiKey}`)
+        .then(r => r.json())
+        .then(d => {
+          const title = d.items?.[0]?.snippet?.title || 'Unknown';
+          videoTitleEl.textContent = title;
+          player.loadVideoById(videoId);
+          currentVideoIndex = index;
+          updateTotalDuration();
+        })
+        .catch(() => {
+          videoTitleEl.textContent = 'Unknown';
+          player.loadVideoById(videoId);
+          currentVideoIndex = index;
+          updateTotalDuration();
+        });
+    }
+
+    function previousVideo() {
+      if (playlist.length === 0) return;
+      currentVideoIndex = (currentVideoIndex - 1 + playlist.length) % playlist.length;
+      loadVideoByIndex(currentVideoIndex);
+    }
+
+    function nextVideo() {
+      if (playlist.length === 0) return;
+      currentVideoIndex = (currentVideoIndex + 1) % playlist.length;
+      loadVideoByIndex(currentVideoIndex);
+    }
+
+    function togglePlayPause() {
+      if (!player) return;
+      if (isPlaying) player.pauseVideo();
+      else player.playVideo();
+    }
+
+    function updatePlayPauseButton() {
+      document.getElementById('playPauseButton').textContent = isPlaying ? 'Pause' : 'Play';
+    }
+
+    function updateTotalDuration() {
+      if (player?.getDuration) {
+        const d = player.getDuration();
+        document.getElementById('progressBar').max = d;
+        document.getElementById('totalDuration').textContent = formatTime(d);
+      }
+    }
+
+    setInterval(() => {
+      if (player?.getCurrentTime) {
+        const c = player.getCurrentTime();
+        document.getElementById('progressBar').value = c;
+        document.getElementById('currentTime').textContent = formatTime(c);
+      }
+    }, 500);
+
+    document.getElementById('progressBar').addEventListener('input', e => {
+      if (player) player.seekTo(e.target.value, true);
+    });
+
+    function openPlaylistEditor() {
+      renderPlaylist();
+      document.getElementById('playlistEditorPopup').style.display = 'flex';
+    }
+
+    function closePlaylistEditor() {
+      document.getElementById('playlistEditorPopup').style.display = 'none';
+    }
+
+    function renderPlaylist() {
+      const ul = document.getElementById('playlistEditorList');
+      ul.innerHTML = '';
+      if (playlist.length === 0) {
+        const emptyLi = document.createElement('li');
+        emptyLi.textContent = 'Playlist is empty.';
+        emptyLi.style.textAlign = 'center';
+        ul.appendChild(emptyLi);
+        return;
+      }
+      playlist.forEach(({ videoId }, i) => {
+        const li = document.createElement('li');
+        li.textContent = `Video ${i + 1}`;
+        li.title = `Play Video ${i + 1}`;
+        li.onclick = (e) => {
+          if (e.target.tagName !== 'BUTTON') {
+            loadVideoByIndex(i);
+            closePlaylistEditor();
+          }
+        };
+
+        const del = document.createElement('button');
+        del.textContent = 'Delete';
+        del.title = 'Delete from playlist';
+        del.onclick = (ev) => {
+          ev.stopPropagation();
+          deleteVideo(i);
+        };
+
+        li.appendChild(del);
+        ul.appendChild(li);
+      });
+    }
+
+    function deleteVideo(i) {
+      playlist.splice(i, 1);
+      localStorage.setItem('videoPlaylist', JSON.stringify(playlist));
+      renderPlaylist();
+      if (playlist.length === 0) {
+        player.stopVideo();
+        videoTitleEl.textContent = '';
+        isPlaying = false;
+        updatePlayPauseButton();
+        thumbEl.src = 'https://www.nomadfoods.com/wp-content/uploads/2018/08/placeholder-1-e1533569576673-960x960.png';
+        document.body.style.background = 'var(--bg-default)';
+      } else {
+        if (i === currentVideoIndex) {
+          currentVideoIndex %= playlist.length;
+          loadVideoByIndex(currentVideoIndex);
+        } else if (i < currentVideoIndex) {
+          currentVideoIndex--;
+        }
+      }
+    }
+
+    function shuffleVideos() {
+      for (let i = playlist.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [playlist[i], playlist[j]] = [playlist[j], playlist[i]];
+      }
+      localStorage.setItem('videoPlaylist', JSON.stringify(playlist));
+      renderPlaylist();
+      currentVideoIndex = 0;
+      if (playlist.length) loadVideoByIndex(0);
+    }
+
+    function searchiTunes() {
+      const term = document.getElementById('itunesSearch').value.trim();
+      const pop = document.getElementById('searchResultsPopup');
+      if (!term) {
+        pop.style.display = 'none';
+        return;
+      }
+      fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=musicVideo`)
+        .then(r => r.json())
+        .then(d => displaySearchResults(d.results))
+        .catch(() => alert('Search error'));
+    }
+
+    function displaySearchResults(results) {
+      const div = document.getElementById('searchResults');
+      div.innerHTML = '';
+      const pop = document.getElementById('searchResultsPopup');
+      if (!results.length) {
+        div.textContent = 'No results.';
+        pop.style.display = 'block';
+        return;
+      }
+      results.forEach(r => {
+        const item = document.createElement('div');
+        item.className = 'searchResultItem';
+        item.textContent = `${r.trackName} - ${r.artistName}`;
+        item.onclick = () => selectITunesResult(r);
+        div.appendChild(item);
+      });
+      pop.style.display = 'block';
+    }
+
+    async function selectITunesResult(r) {
+      const artworkUrl = r.artworkUrl100.replace('100x100bb.jpg', '600x600bb.jpg');
+      const vidId = await searchYoutube(`${r.trackName} ${r.artistName}`);
+      if (!vidId) return alert('No matching YouTube video found');
+
+      if (!playlist.some(item => item.videoId === vidId)) {
+        playlist.push({ videoId: vidId, artworkUrl });
+        localStorage.setItem('videoPlaylist', JSON.stringify(playlist));
+      }
+
+      if (playlist.length === 1) {
+        loadVideoByIndex(0);
+      }
+      hideSearchResults();
+      document.getElementById('itunesSearch').value = '';
+    }
+
+    function hideSearchResults() {
+      document.getElementById('searchResultsPopup').style.display = 'none';
+    }
+
+    function searchYoutube(query) {
+      return fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&key=${apiKey}&type=video&maxResults=1`)
+        .then(r => r.json())
+        .then(d => d.items?.[0]?.id?.videoId || null);
+    }
+
+    function applyGradientFromImage(img) {
+      if (!img.complete) {
+        img.onload = () => applyGradientFromImage(img);
+        return;
+      }
+      try {
+        const palette = colorThief.getPalette(img, 2);
+        if (palette?.length >= 2) {
+          const [c1, c2] = palette.map(rgb => `rgb(${rgb.join(',')})`);
+          document.body.style.background = `linear-gradient(135deg, ${c1}, ${c2})`;
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function toggleVideo() {
+      const d = document.getElementById('player');
+      videoVisible = !videoVisible;
+      d.style.display = videoVisible ? 'block' : 'none';
+      document.getElementById('showHideButton').textContent = videoVisible ? 'Hide Video' : 'Show Video';
+    }
+
+    const tag = document.createElement('script');
+    tag.src = 'https://www.youtube.com/iframe_api';
+    document.head.appendChild(tag);
+
+  </script>
+</body>
+</html>
