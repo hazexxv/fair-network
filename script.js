@@ -5,7 +5,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const mainContent = document.getElementById('mainContent');
   const locationBar = document.getElementById('locationBar');
 
-  // user-editable movies list
 const movies = [
   {
     name: "Spiderman 3",
@@ -379,6 +378,7 @@ const movies = [
     closeModal.addEventListener('click', () => {
       gameModal.style.display = 'none';
       gameFrame.src = '';
+      exitActiveFullscreen();
     });
 
     searchInput.addEventListener('input', () => {
@@ -449,8 +449,7 @@ const movies = [
       };
 
       fullscreenBtn.onclick = () => {
-        if (gameFrame.requestFullscreen) gameFrame.requestFullscreen();
-        else alert('Fullscreen not supported');
+        requestElementFullscreen(gameFrame);
       };
 
       blobBtn.onclick = () => {
@@ -476,26 +475,30 @@ const movies = [
       <h1>Fair Movies</h1>
       <div id="movieContainer" class="grid"></div>
       <div class="modal" id="movieModal">
-        <div class="modal-content">
+        <div class="modal-content" id="movieModalContent">
           <button id="closeMovieModal" class="modal-close">&times;</button>
           <h2 id="movieTitle"></h2>
           <iframe id="movieFrame" frameborder="0"></iframe>
           <div class="controls">
             <button id="openSourceBtn">Open Source</button>
+            <button id="movieFullscreenBtn">Fullscreen</button>
           </div>
         </div>
       </div>
     `;
     const movieContainer  = document.getElementById('movieContainer');
     const movieModal      = document.getElementById('movieModal');
+    const movieModalContent = document.getElementById('movieModalContent');
     const movieFrame      = document.getElementById('movieFrame');
     const movieTitleElem  = document.getElementById('movieTitle');
     const closeMovieModal = document.getElementById('closeMovieModal');
     const openSourceBtn   = document.getElementById('openSourceBtn');
+    const movieFullscreenBtn = document.getElementById('movieFullscreenBtn');
 
     closeMovieModal.addEventListener('click', () => {
       movieModal.style.display = 'none';
       movieFrame.src = '';
+      exitActiveFullscreen();
     });
 
     function renderMovies() {
@@ -508,9 +511,7 @@ const movies = [
           <h2>${m.name}</h2>
         `;
         card.addEventListener('click', () => {
-          // for Drive viewer links we try to embed using an updated viewer URL when possible
           let embedUrl = m.url;
-          // Google Drive share -> convert to embed if it matches file pattern
           const driveMatch = /\/file\/d\/([^\/]+)\//.exec(m.url);
           if (driveMatch && driveMatch[1]) {
             const fileId = driveMatch[1];
@@ -522,6 +523,13 @@ const movies = [
 
           openSourceBtn.onclick = () => {
             window.open(m.url, '_blank');
+          };
+
+          movieFullscreenBtn.onclick = () => {
+            // prefer fullscreen on the iframe element; fall back to modal container
+            requestElementFullscreen(movieFrame).catch(() => {
+              requestElementFullscreen(movieModalContent);
+            });
           };
         });
         movieContainer.appendChild(card);
@@ -588,6 +596,33 @@ const movies = [
         style="width:100%; height:70vh; border:none; border-radius:8px;">
       </iframe>
     `;
+  }
+
+  // helper: request fullscreen on an element with vendor fallbacks
+  function requestElementFullscreen(el) {
+    return new Promise((resolve, reject) => {
+      if (!el) return reject(new Error('No element'));
+      const request = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+      if (request) {
+        const onChange = () => {
+          document.removeEventListener('fullscreenchange', onChange);
+          document.removeEventListener('webkitfullscreenchange', onChange);
+          resolve();
+        };
+        document.addEventListener('fullscreenchange', onChange);
+        document.addEventListener('webkitfullscreenchange', onChange);
+        try { request.call(el); }
+        catch (e) { reject(e); }
+      } else reject(new Error('Fullscreen API not supported'));
+    });
+  }
+
+  // helper: exit fullscreen if active
+  function exitActiveFullscreen() {
+    const exit = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+    if (exit && (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement)) {
+      try { exit.call(document); } catch (e) {}
+    }
   }
 
   // initialize
