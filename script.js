@@ -1,9 +1,11 @@
+// script.js
+
 document.addEventListener('DOMContentLoaded', () => {
   const tabBar      = document.getElementById('tabBar');
   const mainContent = document.getElementById('mainContent');
   const locationBar = document.getElementById('locationBar');
 
-const themes = ['white', 'ocean', 'dark'];
+  const themes = ['white', 'ocean', 'dark'];
 
   function applyTheme(theme) {
     themes.forEach(t => document.body.classList.remove(`${t}-theme`));
@@ -23,6 +25,7 @@ const themes = ['white', 'ocean', 'dark'];
     tabBar.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   }
 
+  // create or focus a top-bar tab
   window.openTab = function(name) {
     clearActiveTab();
     let tab = Array.from(tabBar.children).find(t => t.textContent === name);
@@ -32,7 +35,6 @@ const themes = ['white', 'ocean', 'dark'];
       tab.textContent = name;
       tab.addEventListener('click', () => selectTab(tab, name));
       tabBar.appendChild(tab);
-      // pop animation
       tab.animate(
         [{ transform: 'scale(0.8)' }, { transform: 'scale(1)' }],
         { duration: 200, easing: 'ease-out' }
@@ -42,14 +44,23 @@ const themes = ['white', 'ocean', 'dark'];
     selectTab(tab, name);
   };
 
+  // handle tab selection and render view
   function selectTab(tabElement, name) {
     clearActiveTab();
     tabElement.classList.add('active');
-    if (name === 'Home')        showHome();
-    else if (name === 'Fair Games')  showGamesTab();
-    else if (name === 'Settings')    showSettingsTab();
+
+    // keep home class accurate for layout tweaks
+    if (name === 'Home') mainContent.classList.add('home');
+    else mainContent.classList.remove('home');
+
+    if (name === 'Home')                showHome();
+    else if (name === 'Fair Games')     showGamesTab();
+    else if (name === 'Settings')       showSettingsTab();
+    else if (name === 'Music Player')   showMusicTab();
+    else showHome();
   }
 
+  // HOME view
   function showHome() {
     updateLocation('');
     mainContent.innerHTML = `
@@ -58,6 +69,7 @@ const themes = ['white', 'ocean', 'dark'];
         <button class="nav-btn" data-tab="Home">Home</button>
         <button class="nav-btn" data-tab="Fair Games">Games</button>
         <button class="nav-btn" data-tab="Settings">Settings</button>
+        <button class="nav-btn" data-tab="Music Player">Music</button>
       </div>
     `;
     mainContent.querySelectorAll('.nav-btn').forEach(btn => {
@@ -71,6 +83,7 @@ const themes = ['white', 'ocean', 'dark'];
     });
   }
 
+  // GAMES view
   function showGamesTab() {
     updateLocation('/games');
     mainContent.innerHTML = `
@@ -80,7 +93,7 @@ const themes = ['white', 'ocean', 'dark'];
       <div id="gameContainer"></div>
       <div class="modal" id="gameModal">
         <div class="modal-content">
-          <button id="closeGameModal">&times;</button>
+          <button id="closeGameModal" class="modal-close">&times;</button>
           <h2 id="gameTitle"></h2>
           <iframe id="gameFrame" frameborder="0"></iframe>
           <div class="controls">
@@ -212,6 +225,7 @@ const themes = ['white', 'ocean', 'dark'];
     setInterval(loadGames, 30000);
   }
 
+  // SETTINGS view
   function showSettingsTab() {
     updateLocation('/settings');
     mainContent.innerHTML = `
@@ -219,7 +233,7 @@ const themes = ['white', 'ocean', 'dark'];
       <section class="theme-picker">
         <h2>Pick a Theme</h2>
         ${themes.map(t =>
-          `<label>
+          `<label style="display:block;margin:6px 0;">
              <input type="radio" name="theme" value="${t}"
                ${t === savedTheme ? 'checked' : ''}>
              ${t.charAt(0).toUpperCase() + t.slice(1)}
@@ -227,7 +241,7 @@ const themes = ['white', 'ocean', 'dark'];
         ).join('')}
       </section>
       <button id="aboutBlankSettings" class="nav-btn">Open About Blank</button>
-      <section class="credits">
+      <section class="credits" style="margin-top:1rem;">
         <h2>Credits</h2>
         <ul>
           <li>Christian – Developer</li>
@@ -258,6 +272,19 @@ const themes = ['white', 'ocean', 'dark'];
       });
   }
 
+  // MUSIC view - loads music!.html into an iframe in main content
+  function showMusicTab() {
+    updateLocation('/music');
+    mainContent.innerHTML = `
+      <h1>Music Player</h1>
+      <iframe
+        src="music!.html"
+        style="width:100%; height:70vh; border:none; border-radius:8px;">
+      </iframe>
+    `;
+  }
+
+  // start on Home and ensure Home tab exists and is selectable
   showHome();
   openTab('Home');
 });
